@@ -17,6 +17,7 @@ env:
   AUTH0_API_AUDIENCE: ${{secrets.AUTH0_API_AUDIENCE}}
   AUTH0_ISSUER: ${{secrets.AUTH0_ISSUER}}
   AUTH0_ALGORITHMS: ${{secrets.AUTH0_ALGORITHMS}}
+  CLOUDINARY_URL: ${{secrets.CLOUDINARY_URL}}
 
 permissions:
   contents: read
@@ -80,5 +81,6 @@ jobs:
           export AUTH0_API_AUDIENCE="${{ env.AUTH0_API_AUDIENCE }}"
           export AUTH0_ISSUER="${{ env.AUTH0_ISSUER }}"
           export AUTH0_ALGORITHMS="${{ env.AUTH0_ALGORITHMS }}"
+          export CLOUDINARY_URL="${{ env.CLOUDINARY_URL }}"
 
           pytest -s
