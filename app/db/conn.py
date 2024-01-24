@@ -18,6 +18,8 @@ def connect_db() -> mysql.connector.MySQLConnection:
     if None in [host, user, password, database]:
         raise DBException("Missing database credentials")
 
+    print(f"host: {host}, user: {user}, password: {password}, database: {database}")
+
     try:
         return mysql.connector.connect(
             host=host,
