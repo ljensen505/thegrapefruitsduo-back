@@ -8,8 +8,8 @@ on:
 
 env:
   DB_USER: test_user
-  DB_PASS: test_pass
-  DB_NAME: test_portfolio
+  DB_PASSWORD: test_pass
+  DB_DATABASE: test_portfolio
   DB_HOST: 127.0.0.1
   CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
   CLIENT_ID: ${{ secrets.CLIENT_ID }}
