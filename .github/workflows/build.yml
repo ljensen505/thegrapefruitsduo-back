@@ -1,0 +1,81 @@
+name: thegrapefruitsduo backend build
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  DB_USER: test_user
+  DB_PASS: test_pass
+  DB_NAME: test_portfolio
+  DB_HOST: 127.0.0.1
+  CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+  CLIENT_ID: ${{ secrets.CLIENT_ID }}
+  AUTH0_DOMAIN: ${{secrets.AUTH0_DOMAIN}}
+  AUTH0_API_AUDIENCE: ${{secrets.AUTH0_API_AUDIENCE}}
+  AUTH0_ISSUER: ${{secrets.AUTH0_ISSUER}}
+  AUTH0_ALGORITHMS: ${{secrets.AUTH0_ALGORITHMS}}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+
+      - name: Wait for MySQL to start
+        run: |
+          sudo systemctl start mysql
+          sleep 10
+
+      - name: Create user
+        run: |
+          mysql -u root -proot -e "CREATE USER '${{ env.DB_USER }}'@'${{env.DB_HOST}}' IDENTIFIED BY '${{ env.DB_PASS }}';"
+          mysql -u root -proot -e "GRANT ALL PRIVILEGES ON ${{ env.DB_NAME }}.* TO '${{ env.DB_USER }}'@'${{env.DB_HOST}}';"
+          mysql -u root -proot -e "FLUSH PRIVILEGES;"
+
+      - name: Create MySQL database and tables
+        run: |
+          mysql -u root -proot -e "CREATE DATABASE IF NOT EXISTS ${{ env.DB_NAME }};"
+          python seed.py
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          pip install -r requirements.txt
+      - name: Lint with black
+        run: |
+          black --check .
+
+      - name: Test with pytest
+        run: |
+          export DB_USER="${{ env.DB_USER }}"
+          export DB_PASS="${{ env.DB_PASS }}"
+          export DB_NAME="${{ env.DB_NAME }}"
+          export DB_HOST="${{ env.DB_HOST }}"
+          export CLIENT_SECRET="${{ env.CLIENT_SECRET }}"
+          export CLIENT_ID="${{ env.CLIENT_ID }}"
+          export AUTH0_DOMAIN="${{ env.AUTH0_DOMAIN }}"
+          export AUTH0_API_AUDIENCE="${{ env.AUTH0_API_AUDIENCE }}"
+          export AUTH0_ISSUER="${{ env.AUTH0_ISSUER }}"
+          export AUTH0_ALGORITHMS="${{ env.AUTH0_ALGORITHMS }}"
+
+          pytest -s
