@@ -46,4 +46,3 @@ def get_image_url(public_id: str) -> str:
 
 if __name__ == "__main__":
     image_id = "coco_copy_jywbxm"
-    print(get_image_url(image_id))
