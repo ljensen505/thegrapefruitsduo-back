@@ -6,3 +6,6 @@ class User(BaseModel):
     name: str
     email: str
     id: int | None = None
+
+
+USER_TABLE = "users"

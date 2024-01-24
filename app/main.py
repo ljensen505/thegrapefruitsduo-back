@@ -2,11 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import version
-from app.routers import musician_router, user_router
+from app.admin import VerifyToken
+from app.routers import group_router, musician_router, user_router
 
 app = FastAPI()
 app.include_router(musician_router)
 app.include_router(user_router)
+app.include_router(group_router)
+
+auth = VerifyToken()
 
 origins = [
     "http://localhost:3000",
@@ -18,7 +22,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 

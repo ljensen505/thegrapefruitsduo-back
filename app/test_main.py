@@ -20,3 +20,8 @@ def test_musician_route_exists():
 def test_user_route_exists():
     response = client.get("/users/")
     assert response.status_code == 200
+
+
+def test_group_route_exists():
+    response = client.get("/group/")
+    assert response.status_code == 200

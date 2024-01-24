@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 
 from app.db import connect_db
-from app.models import Musician, User
+from app.models import GROUP_TABLE, MUSICIAN_TABLE, USER_TABLE, Group, Musician, User
 
 margarite: Musician = Musician(
     name="Margarite Waddell",
@@ -39,24 +39,60 @@ tgd_user: User = User(
     name="The Grapefruits Duo",
 )
 
+test_user: User = User(
+    auth0_id="WQrIbh4gPU7ypcMKxxQA18eBGCOGfNxH@clients",
+    email="test@test.com",
+    name="Test User",
+)
+
+tgd: Group = Group(
+    bio="The Grapefruits, comprising of Coco Bender, piano, and Margarite Waddell, french horn, are a contemporary classical music duo. They perform frequently through out the PNW with the goal presenting traditional classical french horn repertoire, new 20th century works, and commissioned works by PNW composers. Our upcoming concert series features works by Jane Vignery, Tara Islas, Gliere, Prokofiev, and Oregon Composers Christina Rusnak and Mark Jacobs.",
+    name="The Grapefruits Duo",
+)
+
 
 def seed():
     print("Seeding database")
     add_musicians()
     add_users()
+    add_group()
+
+
+def add_group():
+    print("Adding group")
+    db = connect_db()
+    cursor = db.cursor()
+    cursor.execute(
+        f"DROP TABLE IF EXISTS {GROUP_TABLE};",
+    )
+    cursor.execute(
+        f"""
+        CREATE TABLE {GROUP_TABLE} (
+            id INT NOT NULL AUTO_INCREMENT,
+            name VARCHAR(255) NOT NULL,
+            bio TEXT NOT NULL,
+            PRIMARY KEY (id)
+        );
+        """
+    )
+    cursor.execute(
+        f"INSERT INTO {GROUP_TABLE} (name, bio) VALUES (%s, %s);",
+        (tgd.name, tgd.bio),
+    )
+    db.commit()
+    cursor.close()
 
 
 def add_users():
     print("Adding users")
-    table = "users"
     db = connect_db()
     cursor = db.cursor()
     cursor.execute(
-        f"DROP TABLE IF EXISTS {table};",
+        f"DROP TABLE IF EXISTS {USER_TABLE};",
     )
     cursor.execute(
         f"""
-        CREATE TABLE {table} (
+        CREATE TABLE {USER_TABLE} (
             id INT NOT NULL AUTO_INCREMENT,
             auth0_id VARCHAR(255) NOT NULL,
             email VARCHAR(255) NOT NULL,
@@ -65,9 +101,9 @@ def add_users():
         );
         """
     )
-    for u in [coco_user, margarite_user, lucas_user, tgd_user]:
+    for u in [coco_user, margarite_user, lucas_user, tgd_user, test_user]:
         cursor.execute(
-            f"INSERT INTO {table} (auth0_id, email, name) VALUES (%s, %s, %s);",
+            f"INSERT INTO {USER_TABLE} (auth0_id, email, name) VALUES (%s, %s, %s);",
             (u.auth0_id, u.email, u.name),
         )
 
@@ -77,15 +113,15 @@ def add_users():
 
 def add_musicians():
     print("Adding musicians")
-    table = "musicians"
+
     db = connect_db()
     cursor = db.cursor()
     cursor.execute(
-        f"DROP TABLE IF EXISTS {table};",
+        f"DROP TABLE IF EXISTS {MUSICIAN_TABLE};",
     )
     cursor.execute(
         f"""
-        CREATE TABLE {table} (
+        CREATE TABLE {MUSICIAN_TABLE} (
             id INT NOT NULL AUTO_INCREMENT,
             name VARCHAR(255) NOT NULL,
             bio TEXT NOT NULL,
@@ -96,7 +132,7 @@ def add_musicians():
     )
     for m in [margarite, coco]:
         cursor.execute(
-            f"INSERT INTO {table} (name, bio, headshot_id) VALUES (%s, %s, %s);",
+            f"INSERT INTO {MUSICIAN_TABLE} (name, bio, headshot_id) VALUES (%s, %s, %s);",
             (m.name, m.bio, m.headshot_id),
         )
 

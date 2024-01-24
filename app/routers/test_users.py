@@ -1,10 +1,11 @@
 from fastapi.testclient import TestClient
 
 from app import app
+from app.models import User
 
 client = TestClient(app=app)
 
-USER_ATTRS = ["id", "name", "email", "auth0_id"]
+USER_ATTRS = [attr for attr in User.model_fields if not attr.startswith("_")]
 BASE_ROUTE = "/users"
 
 

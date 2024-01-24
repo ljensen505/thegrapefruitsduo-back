@@ -6,3 +6,6 @@ class Musician(BaseModel):
     bio: str
     headshot_id: str
     id: int | None = None
+
+
+MUSICIAN_TABLE = "musicians"

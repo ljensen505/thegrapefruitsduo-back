@@ -1,10 +1,59 @@
-from app.models import Musician, User
+from app.models import GROUP_TABLE, MUSICIAN_TABLE, USER_TABLE, Group, Musician, User
 
 from .builders import build_musician, build_user
 from .conn import connect_db
 
-MUSICIAN_TABLE = "musicians"
-USER_TABLE = "users"
+
+def get_group() -> Group:
+    query = f"SELECT * FROM {GROUP_TABLE}"
+    db = connect_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(query)
+    data = cursor.fetchone()
+    cursor.close()
+    db.close()
+
+    name = data["name"]  # type: ignore
+    bio = data["bio"]  # type: ignore
+    id = data["id"]  # type: ignore
+
+    if not data:
+        raise Exception("error retrieving group")
+
+    group = Group(name=name, bio=bio, id=id)
+
+    return group
+
+
+def update_musician_bio(id: int, bio: str) -> Musician | None:
+    """Update a musician's bio as represented in the database"""
+    musician = get_musician(id)
+    if musician is None:
+        return None
+    db = connect_db()
+    cursor = db.cursor()
+    query = f"UPDATE {MUSICIAN_TABLE} SET bio = %s WHERE id = %s"
+    cursor.execute(query, (bio, id))
+    db.commit()
+    cursor.close()
+    db.close()
+    musician.bio = bio
+    return musician
+
+
+def update_group_bio(bio: str) -> Group | None:
+    """Update the group bio as represented in the database"""
+    group = get_group()
+    if group is None:
+        return None
+    db = connect_db()
+    cursor = db.cursor()
+    query = f"UPDATE {GROUP_TABLE} SET bio = %s WHERE id = %s"
+    cursor.execute(query, (bio, group.id))
+    db.commit()
+    cursor.close()
+    db.close()
+    return group
 
 
 def get_users() -> list[User]:

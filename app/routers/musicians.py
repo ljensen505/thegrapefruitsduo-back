@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException, UploadFile, status
+from fastapi import APIRouter, HTTPException, Security, UploadFile, status
 
-from app.admin import uploader
+from app.admin import VerifyToken, uploader
 from app.db import QueryException, queries
 from app.models import Musician
 
@@ -9,6 +9,8 @@ router = APIRouter(
     tags=["musicians"],
     responses={404: {"description": "Not found"}},
 )
+
+auth = VerifyToken()
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
@@ -34,9 +36,37 @@ async def get_musician(id: int) -> Musician:
         )
 
 
+@router.patch("/{id}")
+async def update_musician(
+    id: int, musician: Musician, auth_result=Security(auth.verify)
+) -> Musician | None:
+    """Updates a musician's bio, but requires the entire musician object to be sent in the request body.
+    Requires authentication."""
+    received_user_id = auth_result.get("sub")
+    users = queries.get_users()
+    user_subs = [user.auth0_id for user in users]
+    if not received_user_id or received_user_id not in user_subs:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User is not authorized to perform this action",
+        )
+    queries.update_musician_bio(id, musician.bio)
+    return await get_musician(id)
+
+
 @router.post("/{id}/headshot", status_code=status.HTTP_200_OK)
-async def update_musician_headshot(id: int, file: UploadFile) -> Musician | None:
+async def update_musician_headshot(
+    id: int, file: UploadFile, auth_result=Security(auth.verify)
+) -> Musician | None:
     """Recieves a headshot image file, uploads it to cloudinary, and updates the musician's headshot url in the database"""
+    received_user_id = auth_result.get("sub")
+    users = queries.get_users()
+    user_subs = [user.auth0_id for user in users]
+    if not received_user_id or received_user_id not in user_subs:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User is not authorized to perform this action",
+        )
     return await update_headshot(id, file)
 
 
