@@ -54,7 +54,6 @@ jobs:
       - name: Create MySQL database and tables
         run: |
           mysql -u root -proot -e "CREATE DATABASE IF NOT EXISTS ${{ env.DB_NAME }};"
-          python seed.py
 
       - name: Install dependencies
         run: |
@@ -64,6 +63,10 @@ jobs:
       - name: Lint with black
         run: |
           black --check .
+
+      - name: Seed database
+        run: |
+          python seed.py
 
       - name: Test with pytest
         run: |
