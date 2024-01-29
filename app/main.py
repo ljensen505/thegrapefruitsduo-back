@@ -3,12 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import version
 from app.admin import VerifyToken
-from app.routers import group_router, musician_router, user_router
+from app.routers import contact_router, group_router, musician_router, user_router
 
 app = FastAPI()
 app.include_router(musician_router)
 app.include_router(user_router)
 app.include_router(group_router)
+app.include_router(contact_router)
 
 auth = VerifyToken()
 
