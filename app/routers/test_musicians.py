@@ -77,25 +77,26 @@ def test_update_bio(jwt_token: str):
 
 
 def test_update_headshot(jwt_token: str):
-    musician = client.get(f"{BASE_ROUTE}/1").json()
-    old_headshot_id = str(musician["headshot_id"])
-    headshot_file = "app/admin/test_images/IMG_5679.jpg"
-    with open(headshot_file, "rb") as hf:
-        file_obj = hf.read()
+    original_musician = client.get(f"{BASE_ROUTE}/1").json()
+    original_headshot = original_musician["headshot_id"]
+
+    new_headshot = "app/admin/test_images/IMG_5679.jpg"
+
+    with open(new_headshot, "rb") as f:
         response = client.post(
             f"{BASE_ROUTE}/1/headshot",
             headers={"Authorization": f"Bearer {jwt_token}"},
-            files={"file": file_obj},
+            files={"file": f},
         )
+
     assert response.status_code == 200
-    assert response.json()["headshot_id"] != old_headshot_id
+    assert response.json()["headshot_id"] != original_headshot
 
     # reset headshot
     headshot_file = "app/admin/test_images/mg_headshot.jpg"
-    with open(headshot_file, "rb") as hf:
-        upload_file = hf.read()
+    with open(headshot_file, "rb") as f:
         client.post(
             f"{BASE_ROUTE}/1/headshot",
             headers={"Authorization": f"Bearer {jwt_token}"},
-            files={"file": upload_file},
+            files={"file": f},
         )
