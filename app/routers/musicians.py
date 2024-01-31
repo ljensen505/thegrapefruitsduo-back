@@ -76,9 +76,22 @@ async def update_headshot(id: int, file: UploadFile) -> Musician:
     if musician is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
+    allowed_file_types = ["image/jpeg", "image/png"]
+    if file.content_type not in allowed_file_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File type {file.content_type} not allowed. Allowed file types are {allowed_file_types}",
+        )
+    max_file_size = 1000000  # 1 MB
+    image_file = await file.read()
+    if len(image_file) > max_file_size:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File size {len(image_file)} bytes exceeds maximum of {max_file_size} bytes",
+        )
+
     prev_headshot_id = musician.headshot_id
 
-    image_file = await file.read()
     data = uploader.upload(image_file)
     public_id = data.get("public_id")
 
