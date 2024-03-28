@@ -6,7 +6,7 @@ from app.db.base_queries import BaseQueries
 
 @pytest.fixture
 def base_queries():
-    return BaseQueries()    
+    return BaseQueries()
 
 
 @pytest.mark.asyncio
