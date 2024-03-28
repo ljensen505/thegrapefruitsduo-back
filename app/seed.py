@@ -1,15 +1,20 @@
+from datetime import datetime
+
 from dotenv import load_dotenv
 
-from app.db import connect_db
-from app.models import GROUP_TABLE, MUSICIAN_TABLE, USER_TABLE, Group, Musician, User
+from app.db.conn import connect_db
+from app.models.event import EVENT_TABLE, Event, InsertionEvent, NewEvent
+from app.models.group import GROUP_TABLE, Group
+from app.models.musician import MUSICIAN_TABLE, NewMusician
+from app.models.user import USER_TABLE, User
 
-margarite: Musician = Musician(
+margarite: NewMusician = NewMusician(
     name="Margarite Waddell",
     bio="French hornist Margarite Waddell holds positions with the Eugene Symphony, Sarasota Opera, Boise Philharmonic, Rogue Valley Symphony, and Newport Symphony. As a freelancer, Margarite has played with ensembles throughout the West Coast including the Oregon Symphony, Portland Opera, Santa Rosa Symphony, Marin Symphony, and Symphony San Jose. She has performed with popular artists such as The Who, Josh Groban, and Sarah Brightman. Margarite can be heard on Kamyar Mohajer’s album “Pictures of the Hidden” on Navona Records. She appeared as a soloist with the Silicon Valley Philharmonic in 2016. Margarite cares deeply about music education and has taught private lessons, sectionals, and masterclasses throughout the Bay Area, Southwestern Oregon, Eugene, and Corvallis since 2013. She also performed in the San Francisco Symphony's Adventures in Music program for the 2016-2017 season. Margarite received her bachelor’s degree from the University of Oregon, and her master’s degree from the San Francisco Conservatory of Music.",
-    headshot_id="margarite_copy_a4oxty",
+    headshot_id="zlpkcrvbdsicgj7qtslx",
 )
 
-coco: Musician = Musician(
+coco: NewMusician = NewMusician(
     name="Coco Bender",
     bio="Coco Bender is a pianist residing in the Pacific Northwest. She recently performed with Cascadia Composers, recorded original film scores by Portland composer Christina Rusnak for the Pioneers: First Woman Filmmakers Project, and during the pandemic presented a series of outdoor recitals featuring music by H. Leslie Adams, William Grant Still, Bartok, and others. Coco is a founding member of the Eugene based horn and piano duo, The Grapefruits, as well as a co-artistic director and musical director of an all-women circus, Girl Circus. She has taken master classes with Inna Faliks, Tamara Stefanovich, and Dr. William Chapman Nyaho. Coco currently studies with Dr. Thomas Otten. In addition to performing regularly, she teaches a large studio of students in the Pacific Northwest, from Seattle WA to Eugene OR. Coco was the accompanist for Portland treble choir Aurora Chorus, during their 2021-2022, season under the conductorship of Kathleen Hollingsworth, Margaret Green, Betty Busch, and Joan Szymko.",
     headshot_id="coco_copy_jywbxm",
@@ -50,12 +55,27 @@ tgd: Group = Group(
     name="The Grapefruits Duo",
 )
 
+sample_event: InsertionEvent = InsertionEvent(
+    name="Sample Event",
+    location="Sample Location",
+    description="Sample Description",
+    time=datetime(2022, 1, 1, 12, 0, 0),
+    poster="The_Grapefruits_Present_qhng6y",
+)
+
 
 def seed():
+    confirmation = input(
+        "Are you sure you want to seed the database? Date will be lost. [Y/n]: "
+    )
+    if confirmation.lower() not in ["y", "yes", ""]:
+        print("Exiting")
+        return
     print("Seeding database")
     add_musicians()
     add_users()
     add_group()
+    add_events()
 
 
 def add_group():
@@ -140,6 +160,45 @@ def add_musicians():
     cursor.close()
 
 
-if __name__ == "__main__":
+def add_events():
+    print("Adding events")
+
+    db = connect_db()
+    cursor = db.cursor()
+    cursor.execute(
+        f"DROP TABLE IF EXISTS {EVENT_TABLE};",
+    )
+    cursor.execute(
+        f"""
+        CREATE TABLE {EVENT_TABLE} (
+            id INT NOT NULL AUTO_INCREMENT,
+            name VARCHAR(255) NOT NULL,
+            location VARCHAR(255) NOT NULL,
+            description TEXT NOT NULL,
+            time DATETIME NOT NULL,
+            poster VARCHAR(255) NOT NULL,
+            PRIMARY KEY (id)
+        );
+        """
+    )
+    cursor.execute(
+        f"INSERT INTO {EVENT_TABLE} (name, location, description, time, poster) VALUES (%s, %s, %s, %s, %s);",
+        (
+            sample_event.name,
+            sample_event.location,
+            sample_event.description,
+            sample_event.time,
+            sample_event.poster,
+        ),
+    )
+    db.commit()
+    cursor.close()
+
+
+def main():
     load_dotenv()
     seed()
+
+
+if __name__ == "__main__":
+    main()
