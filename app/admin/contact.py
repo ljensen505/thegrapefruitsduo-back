@@ -8,7 +8,6 @@ HOST = "grapefruitswebsite@gmail.com"
 def send_email(subject: str, body: str) -> None:
     password = getenv("APP_PASSWORD")
     email = getenv("EMAIL")
-    print(email)
     msg = MIMEText(body)
     msg["Subject"] = subject
     msg["From"] = HOST

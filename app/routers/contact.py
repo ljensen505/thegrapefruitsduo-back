@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 
 from app.admin.contact import send_email
-from app.models import Contact
+from app.models.contact import Contact
 
 router = APIRouter(
     prefix="/contact",
